@@ -42,7 +42,7 @@ export type GanttProps = {
 };
 
 type RowDef = { id: string; name: string; color: string };
-type Placed = { t: Task; x1: number; x2: number; y: number; h: number; sub: boolean };
+type Placed = { t: Task; x1: number; x2: number; y: number; h: number; sub: boolean; labelMax: number };
 
 export function GanttView(props: GanttProps) {
   const {
@@ -170,7 +170,7 @@ export function GanttView(props: GanttProps) {
         const li = laneOf.get(t.id) ?? 0;
         const p: Placed = {
           t, x1: xOf(e.start), x2: xOf(e.end ?? e.start) + dayW,
-          y: y + laneY[li], h: BAR_H, sub: false,
+          y: y + laneY[li], h: BAR_H, sub: false, labelMax: 160,
         };
         placed.push(p);
         taskPos.set(t.id, p);
@@ -178,10 +178,23 @@ export function GanttView(props: GanttProps) {
           const ce = eff(c);
           const cp: Placed = {
             t: c, x1: xOf(ce.start), x2: xOf(ce.end ?? ce.start) + dayW,
-            y: y + laneY[li] + BAR_H + 4, h: SUB_H, sub: true,
+            y: y + laneY[li] + BAR_H + 4, h: SUB_H, sub: true, labelMax: 160,
           };
           placed.push(cp);
           taskPos.set(c.id, cp);
+        }
+      }
+
+      // Let each label run into the empty space after its bar — up to the next
+      // bar in the same lane (same y), or the end of the visible grid.
+      const byLaneY = new Map<number, Placed[]>();
+      for (const p of placed) byLaneY.set(p.y, [...(byLaneY.get(p.y) ?? []), p]);
+      for (const lanePlaced of byLaneY.values()) {
+        const sortedLane = [...lanePlaced].sort((a, b) => a.x1 - b.x1);
+        for (let i = 0; i < sortedLane.length; i++) {
+          const next = sortedLane[i + 1];
+          const limit = next ? next.x1 - sortedLane[i].x1 - 8 : days.length * dayW - sortedLane[i].x1 - 4;
+          sortedLane[i].labelMax = Math.max(limit, sortedLane[i].x2 - sortedLane[i].x1);
         }
       }
 
@@ -451,7 +464,7 @@ export function GanttView(props: GanttProps) {
                     </div>
                     {/* label to the right of the bar */}
                     <div className={`pointer-events-none mt-[1px] truncate text-[11px] font-medium leading-tight ${t.is_complete ? "text-faint line-through" : "text-ink"}`}
-                      style={{ opacity: style.opacity, maxWidth: Math.max(w, 160) }}>
+                      style={{ opacity: style.opacity, maxWidth: p.labelMax }}>
                       {p.sub && <span className="text-faint">↳ </span>}{t.title}
                     </div>
                     {showCallouts && t.callout && (
