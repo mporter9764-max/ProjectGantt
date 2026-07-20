@@ -168,7 +168,7 @@ export default function AppShell() {
       <header className="flex-none border-b border-line bg-surface/80 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 px-4 py-2">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="text-base font-semibold tracking-tight">ProjectMgt</span>
+            <span className="text-base font-semibold tracking-tight">ProjectGantt</span>
             {tab !== "master" && (
               <>
                 <select value={projectId ?? ""} onChange={(e) => setProjectId(e.target.value)}

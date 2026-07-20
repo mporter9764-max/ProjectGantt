@@ -479,10 +479,21 @@ export function GanttView(props: GanttProps) {
               const y1 = a.from.y + a.from.h / 2;
               const x2 = LABEL_W + a.to.x1 - 2;
               const y2 = a.to.y + a.to.h / 2;
-              const bend = Math.max(18, Math.min(40, (x2 - x1) / 2));
-              const path = x2 > x1 + 8
-                ? `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`
-                : `M ${x1} ${y1} C ${x1 + 24} ${y1}, ${x1 + 24} ${(y1 + y2) / 2}, ${(x1 + x2) / 2} ${(y1 + y2) / 2} S ${x2 - 24} ${y2}, ${x2} ${y2}`;
+              let path: string;
+              if (y1 === y2 && x2 > x1) {
+                // same lane, forward: straight across
+                path = `M ${x1} ${y1} L ${x2} ${y2}`;
+              } else if (x2 > x1 + 14) {
+                // forward: out, turn, down/up, turn, in — one vertical segment at the midpoint
+                const midX = x1 + Math.max(8, Math.min(24, (x2 - x1) / 2));
+                path = `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`;
+              } else {
+                // backward/tight: out right, vertical to a corridor between rows, back left, vertical to target, in
+                const outX = x1 + 12;
+                const inX = x2 - 12;
+                const corridorY = y1 < y2 ? y1 + a.from.h / 2 + 7 : y1 - a.from.h / 2 - 7;
+                path = `M ${x1} ${y1} L ${outX} ${y1} L ${outX} ${corridorY} L ${inX} ${corridorY} L ${inX} ${y2} L ${x2} ${y2}`;
+              }
               return <path key={i} d={path} fill="none" stroke={color} strokeWidth={1.5} markerEnd="url(#arr)" />;
             })}
           </svg>

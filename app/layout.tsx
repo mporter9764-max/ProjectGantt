@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ProjectMgt",
+  title: "ProjectGantt",
   description: "Multi-project Gantt planning with linked meeting notes.",
 };
 
