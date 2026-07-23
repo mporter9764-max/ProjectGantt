@@ -12,7 +12,8 @@ import { Diamond, Plus } from "./icons";
 const LABEL_W = 150;
 const BAR_H = 18;
 const SUB_H = 10;
-const LANE_PAD = 8;
+const LABEL_H = 15;   // the text line under every bar — now counted in lane height
+const LANE_PAD = 12;
 
 type Pivot = "group" | "owner";
 type DragState = {
@@ -157,13 +158,16 @@ export function GanttView(props: GanttProps) {
       }
 
       // per-lane heights depend on whether any task in it has subtasks
+      const calloutExtra = showCallouts ? 18 : 0;
       const laneHeights: number[] = lanes.map((l) =>
-        l.items.some((t) => childrenOf(t.id).length > 0) ? BAR_H + 4 + SUB_H : BAR_H
+        (l.items.some((t) => childrenOf(t.id).length > 0)
+          ? BAR_H + LABEL_H + calloutExtra + 3 + SUB_H + LABEL_H
+          : BAR_H + LABEL_H + calloutExtra)
       );
       const laneY: number[] = [];
       let acc = LANE_PAD;
       for (const h of laneHeights) { laneY.push(acc); acc += h + LANE_PAD; }
-      const height = Math.max(acc, 34);
+      const height = Math.max(acc, 44);
 
       for (const t of topTasks) {
         const e = eff(t);
@@ -178,7 +182,7 @@ export function GanttView(props: GanttProps) {
           const ce = eff(c);
           const cp: Placed = {
             t: c, x1: xOf(ce.start), x2: xOf(ce.end ?? ce.start) + dayW,
-            y: y + laneY[li] + BAR_H + 4, h: SUB_H, sub: true, labelMax: 160,
+            y: y + laneY[li] + BAR_H + LABEL_H + (showCallouts ? 18 : 0) + 3, h: SUB_H, sub: true, labelMax: 160,
           };
           placed.push(cp);
           taskPos.set(c.id, cp);
@@ -204,7 +208,7 @@ export function GanttView(props: GanttProps) {
 
     return { rowLayouts, totalH: y, taskPos };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, tasks, pivot, collapsed, rangeStart, dayW, preview]);
+  }, [rows, tasks, pivot, collapsed, rangeStart, dayW, preview, showCallouts]);
 
   // ---- drag handlers ----
   function startDrag(e: React.PointerEvent, t: Task, mode: DragState["mode"]) {
