@@ -468,7 +468,7 @@ export function GanttView(props: GanttProps) {
                     </div>
                     {/* label to the right of the bar */}
                     <div className={`pointer-events-none mt-[1px] truncate text-[11px] font-medium leading-tight ${t.is_complete ? "text-faint line-through" : "text-ink"}`}
-                      style={{ opacity: style.opacity, maxWidth: p.labelMax }}>
+                      style={{ opacity: style.opacity, width: p.labelMax }}>
                       {p.sub && <span className="text-faint">↳ </span>}{t.title}
                     </div>
                     {showCallouts && t.callout && (
